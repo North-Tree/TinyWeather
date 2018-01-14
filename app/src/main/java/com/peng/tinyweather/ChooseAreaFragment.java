@@ -2,6 +2,7 @@ package com.peng.tinyweather;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -89,6 +90,13 @@ public class ChooseAreaFragment extends Fragment{
                 } else if (mCurrentLevel == LEVEL_CITY){
                     mSelectedCity = mCityList.get(position);
                     queryCounties();
+                } else if (mCurrentLevel == LEVEL_COUNTY) {
+                    String countyName = mCountyList.get(position).getCountyName();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("county_name", countyName);
+                    startActivity(intent);
+                    getActivity().finish();
+
                 }
             }
         });

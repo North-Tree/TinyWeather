@@ -2,9 +2,11 @@ package com.peng.tinyweather.util;
 
 import android.text.TextUtils;
 
+import com.google.gson.Gson;
 import com.peng.tinyweather.db.City;
 import com.peng.tinyweather.db.County;
 import com.peng.tinyweather.db.Province;
+import com.peng.tinyweather.gson.Weather;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,5 +74,17 @@ public class Utility {
             }
         }
         return false;
+    }
+
+    public static <T> T handleHeAPIResponse(String response, Class<T> classOfT) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather6");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(weatherContent, classOfT);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

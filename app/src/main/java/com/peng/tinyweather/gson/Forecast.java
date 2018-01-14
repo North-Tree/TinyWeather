@@ -9,19 +9,15 @@ import com.google.gson.annotations.SerializedName;
 public class Forecast {
     public String date;
 
-    @SerializedName("tmp")
-    public Temperature temperature;
+    @SerializedName("tmp_max")
+    public String maxTemper;
 
-    @SerializedName("cond")
-    public More more;
+    @SerializedName("tmp_min")
+    public String minTemper;
 
-    public class Temperature {
-        public String max;
-        public String min;
-    }
+    @SerializedName("cond_txt_d")
+    public String weatherInfoDay;
 
-    public class More {
-        @SerializedName("txt_d")
-        public String info;
-    }
+    @SerializedName("cond_txt_n")
+    public String weatherInfoNight;
 }
