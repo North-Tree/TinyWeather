@@ -1,16 +1,20 @@
 package com.peng.tinyweather;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.peng.tinyweather.gson.AQI;
 import com.peng.tinyweather.gson.Forecast;
 import com.peng.tinyweather.gson.Suggestion;
@@ -36,10 +40,17 @@ public class WeatherActivity extends AppCompatActivity {
     private LinearLayout suggestionLayout;
     private TextView aqiText;
     private TextView pm25Text;
+    private ImageView bingImg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        }
         setContentView(R.layout.activity_weather);
 
         weatherScrollView = findViewById(R.id.sv_weather);
@@ -51,6 +62,7 @@ public class WeatherActivity extends AppCompatActivity {
         suggestionLayout = findViewById(R.id.layout_suggestion);
         aqiText = findViewById(R.id.tv_aqi);
         pm25Text = findViewById(R.id.tv_pm25);
+        bingImg = findViewById(R.id.img_bing);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
@@ -67,6 +79,12 @@ public class WeatherActivity extends AppCompatActivity {
             weatherScrollView.setVisibility(View.INVISIBLE);
             requestWeather(countyName);
             requestAQI(countyName);
+        }
+        String bingPicUrl = prefs.getString("bing_pic", null);
+        if (bingPicUrl == null) {
+            Glide.with(this).load(bingPicUrl).into(bingImg);
+        } else {
+            loadBingPicPathFromGuolinAPI();
         }
     }
 
@@ -106,6 +124,7 @@ public class WeatherActivity extends AppCompatActivity {
                 });
             }
         });
+        loadBingPicPathFromGuolinAPI();
     }
 
     public void requestAQI(final String countyName) {
@@ -185,5 +204,32 @@ public class WeatherActivity extends AppCompatActivity {
     private void showAQIInfo(AQI aqi) {
         aqiText.setText(aqi.aqiNowInfo.aqi);
         pm25Text.setText(aqi.aqiNowInfo.pm25);
+    }
+
+    /**
+     * 从郭霖提供的API获取bing的每日一图
+     */
+    private void loadBingPicPathFromGuolinAPI() {
+        String requestBingPic = "http://guolin.tech/api/bing_pic";
+        HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                final String bingPic = response.body().string();
+                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                editor.putString("bing_pic", bingPic);
+                editor.apply();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                            Glide.with(WeatherActivity.this).load(bingPic).into(bingImg);
+                    }
+                });
+            }
+        });
     }
 }
