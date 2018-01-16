@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -41,6 +42,8 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView aqiText;
     private TextView pm25Text;
     private ImageView bingImg;
+    public SwipeRefreshLayout mSwipeRefreshLayout;
+    private String mCurrentCityName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,23 +66,36 @@ public class WeatherActivity extends AppCompatActivity {
         aqiText = findViewById(R.id.tv_aqi);
         pm25Text = findViewById(R.id.tv_pm25);
         bingImg = findViewById(R.id.img_bing);
+        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
         String aqiString = prefs.getString("aqi", null);
         if (weatherString != null && aqiString != null) {
-            //有缓存时直接解析天气数据和AQI数据
+            // 有缓存时直接解析天气数据和AQI数据
             Weather weather = Utility.handleHeAPIResponse(weatherString, Weather.class);
+            mCurrentCityName = weather.basic.cityName;
             AQI aqi = Utility.handleHeAPIResponse(aqiString, AQI.class);
             showWeatherInfo(weather);
             showAQIInfo(aqi);
         } else {
-            //无缓存时去服务器查询天气
-            String countyName = getIntent().getStringExtra("county_name");
+            // 无缓存时去服务器查询天气
+            mCurrentCityName = getIntent().getStringExtra("county_name");
             weatherScrollView.setVisibility(View.INVISIBLE);
-            requestWeather(countyName);
-            requestAQI(countyName);
+            requestWeather(mCurrentCityName);
+            requestAQI(mCurrentCityName);
         }
+
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mCurrentCityName);
+                requestAQI(mCurrentCityName);
+            }
+        });
+
+        // Glide加载背景图
         String bingPicUrl = prefs.getString("bing_pic", null);
         if (bingPicUrl == null) {
             Glide.with(this).load(bingPicUrl).into(bingImg);
@@ -120,6 +136,7 @@ public class WeatherActivity extends AppCompatActivity {
                             Toast.makeText(WeatherActivity.this,
                                     "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        mSwipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
