@@ -1,5 +1,8 @@
 package com.peng.tinyweather;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -23,10 +26,9 @@ import com.peng.tinyweather.gson.AQI;
 import com.peng.tinyweather.gson.Forecast;
 import com.peng.tinyweather.gson.Suggestion;
 import com.peng.tinyweather.gson.Weather;
+import com.peng.tinyweather.service.UpdateJobService;
 import com.peng.tinyweather.util.HttpUtil;
 import com.peng.tinyweather.util.Utility;
-
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 
@@ -232,6 +234,9 @@ public class WeatherActivity extends AppCompatActivity {
             suggestionLayout.addView(view);
         }
         weatherScrollView.setVisibility(View.VISIBLE);
+
+        // 安排天气信息更新任务，在合适的时机启动服务更新天气信息
+        scheduleUpdateJob();
     }
 
     private void showAQIInfo(AQI aqi) {
@@ -264,5 +269,19 @@ public class WeatherActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void scheduleUpdateJob() {
+        JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+        ComponentName componentName = new ComponentName(WeatherActivity.this, UpdateJobService.class);
+        JobInfo.Builder builder = new JobInfo.Builder(1, componentName);
+        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED); //连wifi时才执行
+        builder.setRequiresDeviceIdle(true); //  空闲模式时执行
+        builder.setRequiresBatteryNotLow(true); // 电量充足时才执行
+
+        builder.setPeriodic(1000 * 60 * 60 * 5); //每5小时执行一次
+        //builder.setOverrideDeadline(1000 * 60 * 60 * 6); //6小时后如果不触发，则强制执行，不能与setPeriodic一起设置
+        builder.setPersisted(true); //重启后任务还会生效
+        scheduler.schedule(builder.build());
     }
 }
