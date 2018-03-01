@@ -87,4 +87,8 @@ public class Utility {
         }
         return null;
     }
+
+    public static String toJson(Object o) {
+        return new Gson().toJson(o);
+    }
 }
