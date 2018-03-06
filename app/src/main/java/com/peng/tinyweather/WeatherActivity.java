@@ -102,10 +102,7 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
 
-        //加载天气数据
-        mDataRepository.loadWeatherData(mCurrentCityName, mLoadWeatherDataCallback);
-        //加载空气质量数据
-        mDataRepository.loadAQIData(mCurrentCityName, mLoadAQIDataCallback);
+        loadAllData(mCurrentCityName);
 
         // Glide加载背景图
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -115,6 +112,14 @@ public class WeatherActivity extends AppCompatActivity {
         } else {
             loadBingPicPathFromGuolinAPI();
         }
+    }
+
+    public void loadAllData(String cityName) {
+        mCurrentCityName = cityName;
+        //加载天气数据
+        mDataRepository.loadWeatherData(cityName, mLoadWeatherDataCallback);
+        //加载空气质量数据
+        mDataRepository.loadAQIData(cityName, mLoadAQIDataCallback);
     }
 
     DataSource.LoadWeatherDataCallback mLoadWeatherDataCallback = new DataSource.LoadWeatherDataCallback() {
@@ -206,7 +211,7 @@ public class WeatherActivity extends AppCompatActivity {
             suggestionLayout.addView(view);
         }
         weatherScrollView.setVisibility(View.VISIBLE);
-
+        mCurrentCityName = weather.basic.cityName;
         // 安排天气信息更新任务，在合适的时机启动服务更新天气信息
         scheduleUpdateJob();
     }

@@ -20,7 +20,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".WeatherActivity"></activity>
+        <activity
+            android:name=".WeatherActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            ></activity>
         <service
             android:name=".service.UpdateJobService"
             android:permission="android.permission.BIND_JOB_SERVICE"/>

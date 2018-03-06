@@ -3,6 +3,7 @@ package com.peng.tinyweather.data.local;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import com.peng.tinyweather.data.DataSource;
 import com.peng.tinyweather.gson.AQI;
@@ -25,7 +26,15 @@ public class LocalDataSource implements DataSource {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mCtx);
         String weatherString = prefs.getString("weather", null);
         if (weatherString != null) {
-            callback.onWeatherDataLoaded(Utility.handleHeAPIResponse(weatherString, Weather.class));
+            Weather weather = Utility.toObject(weatherString, Weather.class);
+            if (weather != null && TextUtils.isEmpty(city)) { //如果请求的城市为空，说明是刚启动加载，就直接显示缓存数据好了
+                callback.onWeatherDataLoaded(weather);
+            } else if (weather != null && city.equals(weather.basic.cityName)) {
+                //如果缓存的城市数据数据是所需的城市才采用之
+                callback.onWeatherDataLoaded(weather);
+            } else {
+                callback.onWeatherDataNotAvailable();
+            }
         } else {
             callback.onWeatherDataNotAvailable();
         }
@@ -33,13 +42,7 @@ public class LocalDataSource implements DataSource {
 
     @Override
     public void loadAQIData(String city, LoadAQIDataCallback callback) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mCtx);
-        String aqiString = prefs.getString("aqi", null);
-        if (aqiString != null) {
-            callback.onAQIDataLoaded(Utility.handleHeAPIResponse(aqiString, AQI.class));
-        } else {
-            callback.onAQIDataNotAvailable();
-        }
+        // current do nothing
     }
 
     @Override
@@ -52,9 +55,6 @@ public class LocalDataSource implements DataSource {
 
     @Override
     public void saveAQIData(String city, String aqiString) {
-        SharedPreferences.Editor editor =
-                PreferenceManager.getDefaultSharedPreferences(mCtx).edit();
-        editor.putString("aqi", aqiString);
-        editor.apply();
+        // current do nothing
     }
 }

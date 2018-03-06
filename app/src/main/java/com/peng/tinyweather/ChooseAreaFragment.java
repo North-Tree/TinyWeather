@@ -101,8 +101,7 @@ public class ChooseAreaFragment extends Fragment{
                         WeatherActivity activity = (WeatherActivity)getActivity();
                         activity.mDrawerLayout.closeDrawers();
                         activity.mSwipeRefreshLayout.setRefreshing(true);
-                        activity.requestWeather(countyName);
-                        activity.requestAQI(countyName);
+                        activity.loadAllData(countyName);
                     }
                 }
             }

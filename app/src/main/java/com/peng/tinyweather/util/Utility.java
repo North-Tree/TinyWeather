@@ -80,8 +80,8 @@ public class Utility {
         try {
             JSONObject jsonObject = new JSONObject(response);
             JSONArray jsonArray = jsonObject.getJSONArray("HeWeather6");
-            String weatherContent = jsonArray.getJSONObject(0).toString();
-            return new Gson().fromJson(weatherContent, classOfT);
+            String strContent = jsonArray.getJSONObject(0).toString();
+            return new Gson().fromJson(strContent, classOfT);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -90,5 +90,9 @@ public class Utility {
 
     public static String toJson(Object o) {
         return new Gson().toJson(o);
+    }
+
+    public static <T> T toObject(String strContent, Class<T> classOfT) {
+        return new Gson().fromJson(strContent, classOfT);
     }
 }

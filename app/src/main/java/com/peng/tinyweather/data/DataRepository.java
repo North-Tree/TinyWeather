@@ -50,49 +50,15 @@ public class DataRepository implements DataSource {
 
             @Override
             public void onWeatherDataNotAvailable() { // 如果本地数据源无数据，再从远程数据源获取数据
-                mRemoteDataSource.loadWeatherData(id, new LoadWeatherDataCallback() {
-                    @Override
-                    public void onWeatherDataLoaded(Weather weather) {
-                        callback.onWeatherDataLoaded(weather);
-                        // 存起来，方便以后使用
-                        mLocalDataSource.saveAQIData(id, Utility.toJson(weather));
-                    }
-
-                    @Override
-                    public void onWeatherDataNotAvailable() {
-                        callback.onWeatherDataNotAvailable();
-                    }
-                });
+                loadWeatherDataFromRemoteSource(id, callback);
             }
         });
     }
 
     @Override
     public void loadAQIData(final String id, final LoadAQIDataCallback callback) {
-        //先从本地数据源获取空气质量数据
-        mLocalDataSource.loadAQIData(id, new LoadAQIDataCallback() {
-            @Override
-            public void onAQIDataLoaded(AQI aqi) {
-                callback.onAQIDataLoaded(aqi);
-            }
-
-            @Override
-            public void onAQIDataNotAvailable() {// 如果本地数据源无数据，再从远程数据源获取数据
-                mRemoteDataSource.loadAQIData(id, new LoadAQIDataCallback() {
-                    @Override
-                    public void onAQIDataLoaded(AQI aqi) {
-                        callback.onAQIDataLoaded(aqi);
-                        // 存起来，方便以后使用
-                        mLocalDataSource.saveAQIData(id, Utility.toJson(aqi));
-                    }
-
-                    @Override
-                    public void onAQIDataNotAvailable() {
-                        callback.onAQIDataNotAvailable();
-                    }
-                });
-            }
-        });
+        //aqi 数据暂时全部从网络获取，不存储在本地
+        loadAQIDataFromRemoteSource(id, callback);
     }
 
     @Override
@@ -116,7 +82,7 @@ public class DataRepository implements DataSource {
             public void onWeatherDataLoaded(Weather weather) {
                 callback.onWeatherDataLoaded(weather);
                 // 存起来，方便以后使用
-                mLocalDataSource.saveAQIData(id, Utility.toJson(weather));
+                mLocalDataSource.saveWeatherData(id, Utility.toJson(weather));
             }
 
             @Override
@@ -136,8 +102,6 @@ public class DataRepository implements DataSource {
             @Override
             public void onAQIDataLoaded(AQI aqi) {
                 callback.onAQIDataLoaded(aqi);
-                // 存起来，方便以后使用
-                mLocalDataSource.saveAQIData(id, Utility.toJson(aqi));
             }
 
             @Override
